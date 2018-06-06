@@ -204,6 +204,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             MIN_TIME_BW_UPDATES, MIN_DISTANCE_CHANGE_FOR_UPDATES, locationListenerNetwork);
                 }
                 if (isGPSEnabled) {
+                    if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                            && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                        return;
+                    }
+                    locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
+                            MIN_TIME_BW_UPDATES, MIN_DISTANCE_CHANGE_FOR_UPDATES, locationListenerGps);
                     //launch locationListenerGps
                     //Code here
                 }
@@ -242,7 +248,43 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         @Override
         public void onStatusChanged(String provider, int status, Bundle extras) {
+            String statusString;
             Log.d("MyMapsApp", "locationListenerNetwork: status change");
+            switch (status) {
+                case LocationProvider.OUT_OF_SERVICE:
+                    statusString = "OUT_OF_SERVICE";
+                    Log.d("MyMapsActivity", "onStatusChanged: status = " + statusString);
+                    if (ActivityCompat.checkSelfPermission(MapsActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(MapsActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                        // TODO: Consider calling
+                        //    ActivityCompat#requestPermissions
+                        // here to request the missing permissions, and then overriding
+                        //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                        //                                          int[] grantResults)
+                        // to handle the case where the user grants the permission. See the documentation
+                        // for ActivityCompat#requestPermissions for more details.
+                        return;
+                    }
+                    locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,
+                            MIN_TIME_BW_UPDATES, MIN_DISTANCE_CHANGE_FOR_UPDATES, locationListenerNetwork);
+                    break;
+                case LocationProvider.TEMPORARILY_UNAVAILABLE:
+                    statusString = "TEMPORARILY UNAVAILABLE";
+                    Log.d("MyMapsActivity", "onStatusChanged: status = " + statusString);
+                    locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,
+                            MIN_TIME_BW_UPDATES, MIN_DISTANCE_CHANGE_FOR_UPDATES, locationListenerNetwork);
+                    break;
+                case LocationProvider.AVAILABLE:
+                    statusString = "AVAILABLE";
+                    Log.d("MyMapsActivity", "onStatusChanged: status = " + statusString + ", location is updating");
+                    Toast.makeText(getApplicationContext(), "Location Status = " + statusString + ", updating", Toast.LENGTH_SHORT).show();
+                    break;
+                default:
+                    statusString = "DEFAULT";
+                    Log.d("MyMapsActivity", "onStatusChanged: status = " + statusString);
+                    locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,
+                            MIN_TIME_BW_UPDATES, MIN_DISTANCE_CHANGE_FOR_UPDATES, locationListenerNetwork);
+                    break;
+            }
         }
 
         @Override
@@ -274,17 +316,52 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         @Override
         public void onStatusChanged(String provider, int status, Bundle extras) {
-
+            String statusString;
+            switch (status) {
+                case LocationProvider.OUT_OF_SERVICE:
+                    statusString = "OUT_OF_SERVICE";
+                    Log.d("MyMapsActivity", "onStatusChanged: status = " + statusString);
+                    if (ActivityCompat.checkSelfPermission(MapsActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(MapsActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                        // TODO: Consider calling
+                        //    ActivityCompat#requestPermissions
+                        // here to request the missing permissions, and then overriding
+                        //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                        //                                          int[] grantResults)
+                        // to handle the case where the user grants the permission. See the documentation
+                        // for ActivityCompat#requestPermissions for more details.
+                        return;
+                    }
+                    locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,
+                            MIN_TIME_BW_UPDATES, MIN_DISTANCE_CHANGE_FOR_UPDATES, locationListenerNetwork);
+                    break;
+                case LocationProvider.TEMPORARILY_UNAVAILABLE:
+                    statusString = "TEMPORARILY UNAVAILABLE";
+                    Log.d("MyMapsActivity", "onStatusChanged: status = " + statusString);
+                    locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,
+                            MIN_TIME_BW_UPDATES, MIN_DISTANCE_CHANGE_FOR_UPDATES, locationListenerNetwork);
+                    break;
+                case LocationProvider.AVAILABLE:
+                    statusString = "AVAILABLE";
+                    Log.d("MyMapsActivity", "onStatusChanged: status = " + statusString + ", location is updating");
+                    Toast.makeText(getApplicationContext(), "Location Status = " + statusString + ", updating", Toast.LENGTH_SHORT).show();
+                    break;
+                default:
+                    statusString = "DEFAULT";
+                    Log.d("MyMapsActivity", "onStatusChanged: status = " + statusString);
+                    locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,
+                            MIN_TIME_BW_UPDATES, MIN_DISTANCE_CHANGE_FOR_UPDATES, locationListenerNetwork);
+                    break;
+            }
         }
 
         @Override
         public void onProviderEnabled(String provider) {
-
+            //nothing
         }
 
         @Override
         public void onProviderDisabled(String provider) {
-
+            //nothing
         }
 
     };
@@ -331,6 +408,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
 
         public void trackMyLocation(View view) {
+            getLocation();
+            Log.d("MyMapsActivity", "trackMyLocation: calling getLocation");
+            if (notTrackingMyLocation){
+                getLocation();
+                notTrackingMyLocation = false;
+            }else{
+                locationManager.removeUpdates(locationListenerGps);
+                locationManager.removeUpdates(locationListenerNetwork);
+                notTrackingMyLocation = true;
+            }
             //kick off the location tracker using getLocation to start the LocationListeners
             //if (notTrackingMyLocation) {getLocation()}; notTrackingMyLocation = false;
             //else {removeUpdates for both network and gps; notTrackingMyLocation = true)
