@@ -166,7 +166,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 for (int i = 0; i < addressList.size(); i++) {
                     Address address = addressList.get(i);
                     LatLng latLng = new LatLng(address.getLatitude(), address.getLongitude());
-                    mMap.addMarker(new MarkerOptions().position(latLng).title(i + ": " + address.getSubThoroughfare()));
+                    mMap.addMarker(new MarkerOptions().position(latLng).title(i + ": " + address.getSubThoroughfare() + " " + address.getThoroughfare() + " " + address.getPostalCode()));
                     mMap.animateCamera(CameraUpdateFactory.newLatLng(latLng));
                     Log.d("MyMapsApp", "added Marker and updated animateCamera");
                 }
